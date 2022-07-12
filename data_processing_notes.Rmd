@@ -1,0 +1,229 @@
+---
+title: "data_processing_notes"
+output: html_document
+date: "2022-07-13"
+---
+
+## Introduction to dplyr: 
+
+dplyr is an R package in the tidyverse used for data manipulation. 
+```{r} 
+# loading package 
+library(dplyr) 
+
+# previewing the dataset 
+head(starwars) 
+#note: this gives you the first 6 rows, but if you want to see a different number of rows then you can add a number after the dataset name when calling the function 
+
+``` 
+
+## Filtering Data: 
+
+We can filter data using `filter()`. This allows us to subset observations (rows) based on their values (in columns). 
+
+```{r} 
+
+filter(starwars, hair_color == "blond" | hair_color == "blonde")  
+# gets rid of anything that doesn't match the parameters 
+# note: when you want to filter something, you can filter out as many things as you want 
+filter(starwars, hair_color == "blond" & species == "Human") 
+
+# it does each one at a time -- first it filters out all the humans, and then it filters the next from that group, etc 
+filter(starwars, species == "Human", homeworld == "Tatooine", skin_color == "fair") 
+
+filteredData = filter(starwars, species == "Human", homeworld == "Tatooine", skin_color == "fair") 
+
+# filtering out observations (rows) with variables that match certain specific values (you give the filter function a vector of possible values): 
+filter(starwars, hair_color %in% c("blond", "blonde")) 
+
+# the list of possible values can also be defined before the filter function is called: 
+importantPlanets = c("Tatooine", "Naboo", "Hoth") 
+filter(starwars, homeworld %in% importantPlanets) 
+
+# including missing values: 
+filter(starwars, mass != 75 | is.na(mass), name < "Mace") 
+
+# filtering out the characters that are missing a hair color 
+filter(starwars, is.na(hair_color)) 
+
+```
+
+#### Misc. Notes: 
+
+* or: | 
+* and: & 
+* less than or equal to: <= 
+* greater than or equal to: >= 
+* not: ! 
+* when you type "variable != something" it automatically assumes you don't want to include any missing (NA) values 
+* NA: missing value; can be any type 
+* for exponents, you can use either ^ or ** 
+* with filter and arrange, a comma means and; with select, a comma means or 
+* shortcut for when you want a value between 2 different numbers: between function, ex. between(birth_year, 100, 200) 
+* the summary function works differently for different types
+* if you use a < or > with a string, it'll sort it alphabetically 
+* it's not really based on ASCII values, but basically letters earlier in the alphabet < letters later in the alphabet, ignoring case 
+* if there's an error when using the filter function, make sure the column name is spelled correctly (and the value name if it's a categorical variable) 
+* make sure to use `==` when comparing observations (NOT `=` -- that's an assignment operator) 
+* <, >, <=, and >= cna be used to compare numeric or categorical variables (nominal variables - ranked alphabetically as described above, while **ordinal variables have a built-in rank**) 
+
+```{r} 
+# loading the library (the diamonds dataset is inside the ggplot2 library) 
+library(ggplot2) 
+# ranked data 
+head(diamonds) # displays the first 6 rows 
+class(diamonds$cut) # gives you the specific type of data 
+summary(diamonds$cut) # gives you a count of each category, or summary statistics if numeric 
+summary(diamonds$carat) 
+head(diamonds$cut) # displays the first 6 values (and levels) 
+
+filter(diamonds, cut > "Good") #shows all the diamonds that are very good, premium, or ideal 
+
+## ordering categorical data: 
+# the unique function returns all unique values in a vector 
+unique(starwars$eye_color) 
+# defining how you want it to be ranked: 
+# note: all unique values need to be listed in the order you want them in, and if you don't list them all then you'll get some NA values 
+factor(starwars$eye_color, c("red", "orange", "gold", "yellow", "green", "blue", "black"), ordered = T) 
+
+# filtering out all the characters that are shorter than 100 cm 
+filter(starwars, height < 100, species != "Droid")  
+
+# filtering out the characters that were born between the years 100 and 200 (inclusive) 
+filter(starwars, birth_year >= 100 & birth_year <= 200) 
+
+# shortcut (using the between function): 
+filter(starwars, between(birth_year, 100, 200)) 
+
+# filtering out the characters that weight over 100kg but are shorter than 185 cm 
+filter(starwars, mass > 100, height < 185) 
+
+## Missing Values: 
+NA > 5 # this doesn't cause an error, but it returns NA because it doesn't know -- there's no way to determine the answer 
+
+# function to determine if a value is NA: 
+is.na(NA) 
+
+mass = NA 
+mass == 10 # similar to the above line 
+is.na(mass) # returns true 
+NA + 10 
+NA / 2 
+
+mary_age = NA 
+paul_age = NA 
+mary_age == paul_age # still returns NA because the values are unknown 
+
+```
+
+## Arranging Data: 
+
+`arrange()` reorders rows. It doesn't remove any rows. <br> 
+NA values are always at the end when you order by a column. 
+
+```{r} 
+
+# arranging birth year from lowest to highest 
+arrange(starwars, birth_year) 
+
+# highest to lowest birth year 
+arrange(starwars, desc(birth_year))  
+
+# categorical - alphabetical order 
+arrange(starwars, hair_color) 
+
+# multiple columns: 
+arrange(starwars, hair_color, birth_year) 
+
+## practice: 
+
+# arranging the characters by height in order to find the tallest and shortest characters 
+arrange(starwars, height) 
+arrange(starwars, desc(height)) 
+
+## alphabetizing the star wars characters by name 
+arrange(starwars, name) 
+
+# using arrange() to sort all missing values to the start 
+
+# these two do the same thing, and they're not exactly right 
+arrange(starwars, desc(is.na(height))) 
+arrange(starwars, !is.na(height)) 
+
+arrange(starwars, desc(is.na(height)), desc(is.na(mass))) 
+
+arrange(starwars, !is.na(starwars)) 
+
+```
+
+## Selecting Certain Columns in a Dataset: 
+
+`select()` allows us to retain only certain variables (columns). It doesn't change the order, but it removes any columns not named. 
+
+```{r} 
+
+select(starwars, hair_color, skin_color, eye_color) 
+# since the columns listed in the above line are all in the same order that they appear in the list, this line does the same thing: 
+select(starwars, hair_color:eye_color) 
+
+# if you want everything except a certain column: 
+select(starwars, -hair_color) 
+
+# note: when you want to see everything except for several columns, you need parentheses: 
+select(starwars, -(hair_color:eye_color)) 
+
+starwars_no_color = select(starwars, -(hair_color:eye_color)) 
+
+# filtering out all columns that contain a certain string in the title 
+select(starwars, contains("color")) 
+
+select(starwars, contains("_")) 
+
+select(starwars, ends_with("color")) 
+
+select(starwars, starts_with("s")) 
+
+# the comma is kinda like an or -- if you want everything to start with s AND end with color then you have to use & 
+select(starwars, starts_with("s"), ends_with("color")) 
+
+# renaming columns: 
+rename(starwars, birthYear = birth_year) 
+
+## practice 
+
+# select out the homeworld and species for the starwars dataset. What question might this subset of variables help answer? 
+select(starwars, homeworld, species) 
+
+# brainstorm as many ways possible to select hair_color, eye_color, skin_color, and birth_year 
+select(starwars, hair_color, eye_color, skin_color, birth_year) 
+select(starwars, hair_color:birth_year) 
+select(starwars, ends_with("color"), birth_year) 
+select(starwars, ends_with("color"), ends_with("year")) 
+
+``` 
+
+## Adding Columns: 
+
+`mutate()` takes your current columns, mutates them, and adds a new column to the end of the dataset. You can mutate either a single column or multiple columns. 
+
+```{r} 
+
+starwars_small = select(starwars, height, mass, birth_year) 
+head(starwars_small) 
+
+starwars_small = mutate(starwars_small, height_m = height/100) 
+
+# you can mutate as many columns as you want in one function call 
+mutate(starwars_small, bmi = mass/(height_m^2), new_birth_year = birth_year + 1)  
+
+# if you only want to keep new columns, you use the transmute function:
+transmute(starwars_small, height_m = height/100, bmi = mass/(height_m^2)) 
+
+# using aggregate functions 
+starwars_small = select(starwars, height, mass, birth_year) 
+prop_mass = mutate(starwars_small, proportional_mass = mass/sum(mass, na.rm = T)) # na.rm - removes NA values 
+arrange(prop_mass, desc(proportional_mass)) 
+
+```
+
+
