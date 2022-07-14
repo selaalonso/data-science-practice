@@ -227,3 +227,83 @@ arrange(prop_mass, desc(proportional_mass))
 ```
 
 
+## Summarizing + Grouping Data Into One Value: 
+
+`summarize()` or `summarise()` collapses an entire column of data to a single value 
+
+```{r} 
+
+mutate(starwars, mean_mass = mean(mass, na.rm = T)) 
+
+# these two lines do the same thing: 
+summarise(starwars, mean_mass = mean(mass, na.rm = T))
+mean(starwars$mass, na.rm = T) 
+
+## why you might want to use the summarize function instead of just calculating a number: 
+# summarize() lets you calculate several "summary" values in one function call and it gives them to you in a table with 1 row 
+# you can also group parts of the dataset: 
+# n() returns the number of values in each group 
+species_masses = summarise(group_by(starwars, species), mean_mass = mean(mass, na.rm = T), count = n()) 
+# trying to see which species, on average, weighs the most: 
+arrange(species_masses, desc(mean_mass)) 
+
+## the pipe operator %>% 
+# function(x, y) is the same as x %>% function(y) 
+# everything below these comments does the same as the species_masses stuff above 
+
+species_masses = starwars %>% 
+  group_by(species) %>% 
+  summarise(mean_mass = mean(mass, na.rm = T), count = n()) %>% 
+  arrange(desc(mean_mass)) 
+# when using dplyr functions, you generally always start with the name of the dataset 
+
+``` 
+
+## Sampling a Designated Number of Rows: 
+
+`sample_n()` allows us to sample a random number of rows from our dataset. 
+
+```{r} 
+
+# every time this line is run, you get a different set of 10 random rows from the starwars dataset, but if you save it as an R object then it will always give you the same 10 rows every time you use it in your code 
+sample_n(starwars, 10) 
+starwars_10rows = sample_n(starwars, 10) 
+
+# you can also use sample_frac() to get a certain percentage of the rows in a dataset (still randomly selected) 
+nrow(starwars) # shows that the total number of rows in the starwars dataset is 87 
+starwars_10percent = sample_frac(starwars, 0.1) 
+
+
+starwars %>% 
+  group_by(gender) %>% 
+  sample_n(4) # pulls 4 rows from each gender; also lists NA values 
+
+starwars %>% 
+  group_by(species) %>% 
+  sample_n(1) 
+
+``` 
+
+We can also take a "slice" of our dataset using `slice()` and its related set of functions. This retains the order of our rows in the dataset and is not random. 
+
+```{r} 
+
+slice(starwars, 50:60) # slice by index value (row number) 
+slice_head(starwars, n = 10) #first 10 rows by index 
+slice_tail(starwars, n = 10) # last 10 rows by index 
+slice_min(starwars, order_by = mass, n = 10) # rows with lowest 10 masses 
+slice_max(starwars, order_by = mass, n = 10) # rows with highest 10 masses  
+
+``` 
+
+`select()` can also be used to reorder columns: 
+
+```{r} 
+
+select(starwars, species, everything) # lists the species column first, then everything else comes after that 
+
+select(starwars, species, hair_color, eye_color, height, everything()) 
+
+``` 
+
+
