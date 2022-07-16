@@ -11,4 +11,4 @@ Include in a README:
 * 
 
 #### example (small) description: 
-This is a project by Sela Alonso analyzing data on varios albums. It uses the dataset from [kaggle](https://www.kaggle.com/datasets/revilrosa/music-label-dataset?select=albums.csv). 
+This is a project by Sela Alonso analyzing data on various albums. It uses the dataset from [kaggle](https://www.kaggle.com/datasets/revilrosa/music-label-dataset?select=albums.csv). 
