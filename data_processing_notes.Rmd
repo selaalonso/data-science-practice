@@ -306,4 +306,16 @@ select(starwars, species, hair_color, eye_color, height, everything())
 
 ``` 
 
+```{r} 
+
+filter(starwars, "A New Hope" %in% films) # shows the rows representing all the characters in the film "A New Hope" 
+
+# this is different from filter(starwars, films == "A New Hope") because that would show the characters that were ONLY in the film "A New Hope", while filter(starwars, "A New Hope" %in% films) shows all the characters that were only in that film, along with the characters that were in that film as well as other star wars films 
+
+```
+
+
+
+
+
 
